@@ -15,6 +15,7 @@ class Pipeline:
         self.model = model
         self.json_depth_limit: int = kwargs.get("json_depth_limit", 20)
         self.cache_prompt = kwargs.get("cache_prompt", True)
+        self.logger_enable = kwargs.get("logger_enable", True)
         self.cache_size = kwargs.get("cache_size", 200)
         self.prompt_cache = PromptCache(self.cache_size)
         self.conversation_path = kwargs.get("output_path", Path.cwd())
@@ -31,7 +32,8 @@ class Pipeline:
             for key, value in model.__dict__.items()
             if is_string_or_digit(value)
         }
-        self.logger = ConversationLogger(self.conversation_path, self.model_dict)
+        if self.logger_enable:
+            self.logger = ConversationLogger(self.conversation_path, self.model_dict)
 
     def fit(self, text_input: str, **kwargs) -> Any:
         """
@@ -72,8 +74,8 @@ class Pipeline:
                 message = create_message(
                     template, variables_dict, output, None, prompt_name
                 )
-
-            self.logger.add_message(message)
+            if self.logger_enable:
+                self.logger.add_message(message)
             outputs_list.append(output)
 
         return outputs_list
